@@ -1,14 +1,66 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+.btn {
+  margin: 0 0.75rem 0.375rem 0;
+}
+
+.card-header {
+  background-color: #ddd;
+}
+
+.card-table-head {
+  background-color: #fff;
+}
+
+.convenience-table {
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+.basic-attendee-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.basic-attendee-table .number {
+  width: 10%;
+}
+
+.basic-attendee-table .name {
+  width: 31%;
+}
+
+.basic-attendee-table .date {
+  width: 25%;
+}
+
+.basic-attendee-table .type {
+  width: 15%;
+}
+
+.basic-attendee-table .price {
+  width: 23%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.totals-card {
+  margin-top: 10px;
+}
+
+.totals-card .card-header {
+  background-color: white;
+}
+/*# sourceMappingURL=index.css.map */
