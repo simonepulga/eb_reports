@@ -3,6 +3,7 @@ import fakeEvent from "../factories/fakeEvent";
 import fakeAttendee from "../factories/fakeAttendee";
 import fakeOrder from "../factories/fakeOrder";
 import moment from "moment";
+import faker from "faker";
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -31,10 +32,27 @@ function addNOICFields(series) {
 }
 
 const EventbriteInterface = {
+  getFakeProgram({
+    serieses_count = 4,
+    events_per_series = 6,
+    attendees_per_event = [5, 10] // a min max range}
+  }) {
+    let program = { serieses: [] };
+    for (let i = 0; i < serieses_count; i++) {
+      program.serieses.push(
+        this.getFakeSeries({
+          events_count: events_per_series,
+          attendees_per_event
+        })
+      );
+    }
+    return program;
+  },
+
   getFakeSeries({
     events_count = 6,
     attendees_per_event = [76, 76], // a min max range
-    title = "The Default Show"
+    title = faker.commerce.productName()
   }) {
     let series = fakeSeries({ title });
     series.events = [];
