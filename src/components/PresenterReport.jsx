@@ -10,22 +10,40 @@ class PresenterReport extends Component {
   };
 
   componentDidMount() {
-    // console.log(EB.getRealProgram());
-    EB.getRealProgram().then(response => {
-      this.setState(
-        {
-          program: response
-        },
-        () => {
-          const cardsVisibility = {};
-          if (!this.state.program) return true;
-          for (let series of this.state.program) {
-            cardsVisibility[series.id] = false;
-          }
-          this.setState({ cardsVisibility });
+    // uncomment the section below to use test data
+    this.setState(
+      {
+        program: EB.getFakeProgram({
+          serieses_count: 4,
+          events_per_series: 6,
+          attendees_per_event: [5, 10] // a min max range}
+        })
+      },
+      () => {
+        const cardsVisibility = {};
+        if (!this.state.program) return true;
+        for (let series of this.state.program) {
+          cardsVisibility[series.id] = false;
         }
-      );
-    });
+        this.setState({ cardsVisibility });
+      }
+    );
+    // uncomment the section below to use real data
+    // EB.getRealProgram().then(response => {
+    //   this.setState(
+    //     {
+    //       program: response
+    //     },
+    //     () => {
+    //       const cardsVisibility = {};
+    //       if (!this.state.program) return true;
+    //       for (let series of this.state.program) {
+    //         cardsVisibility[series.id] = false;
+    //       }
+    //       this.setState({ cardsVisibility });
+    //     }
+    //   );
+    // });
   }
 
   toggle(series_id) {
