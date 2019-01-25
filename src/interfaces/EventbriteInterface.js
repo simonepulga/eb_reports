@@ -4,7 +4,8 @@ import fakeAttendee from "../factories/fakeAttendee";
 import fakeOrder from "../factories/fakeOrder";
 import moment from "moment";
 import faker from "faker";
-
+import axios from "axios";
+import eventbrite from "eventbrite";
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
 }
@@ -31,15 +32,151 @@ function addNOICFields(series) {
   return series;
 }
 
+const sdk = eventbrite({
+  baseURL: "https://www.eventbriteapi.com/v3",
+  token: process.env.REACT_APP_EB_TOKEN
+});
+
+const getAllSerieses = (cont_token, program, resolve, reject) => {
+  sdk
+    .request(
+      `/organizations/${
+        process.env.REACT_APP_EB_ORG_ID
+      }/events/?status=live&show_series_parent=true${
+        cont_token ? "&continuation=" + cont_token : ""
+      }`
+    )
+    .then(response => {
+      // console.log(response);
+      const retrievedSerieses = program.concat(response.events);
+      if (response.pagination.has_more_items) {
+        getAllSerieses(
+          response.pagination.continuation,
+          program,
+          resolve,
+          reject
+        );
+      } else {
+        resolve(retrievedSerieses);
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      reject(
+        "Something wrong with event serieses. Please refresh the page and try again."
+      );
+    });
+};
+
+const getAllEvents = (cont_token, events, resolve, reject) => {
+  sdk
+    .request(
+      `/organizations/${
+        process.env.REACT_APP_EB_ORG_ID
+      }/events/?status=live&show_series_parent=false${
+        cont_token ? "&continuation=" + cont_token : ""
+      }`
+    )
+    .then(response => {
+      // console.log(response);
+      const retrievedEvents = events.concat(response.events);
+      if (response.pagination.has_more_items) {
+        getAllEvents(response.pagination.continuation, events, resolve, reject);
+      } else {
+        resolve(retrievedEvents);
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      reject(
+        "Something wrong with events. Please refresh the page and try again."
+      );
+    });
+};
+
+const getAllAttendees = (cont_token, attendees, resolve, reject) => {
+  sdk
+    .request(
+      `/organizations/${
+        process.env.REACT_APP_EB_ORG_ID
+      }/attendees/?status=attending${
+        cont_token ? "&continuation=" + cont_token : ""
+      }`
+    )
+    .then(response => {
+      // console.log(response);
+      const retrievedAttendees = attendees.concat(response.attendees);
+      if (response.pagination.has_more_items) {
+        getAllAttendees(
+          response.pagination.continuation,
+          attendees,
+          resolve,
+          reject
+        );
+      } else {
+        resolve(retrievedAttendees);
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      reject(
+        "Something wrong with attendees. Please refresh the page and try again."
+      );
+    });
+};
+
 const EventbriteInterface = {
+  getTest() {
+    // sdk
+    //   .request(`/organizations/${process.env.REACT_APP_EB_ORG_ID}/events/`)
+    //   .then(res => {
+    //     console.log("res", res);
+    //   });
+  },
+
+  async getRealProgram() {
+    try {
+      const programPromise = new Promise((resolve, reject) => {
+        getAllSerieses(false, [], resolve, reject);
+      }).then(response => {
+        return response;
+      });
+      const eventsPromise = new Promise((resolve, reject) => {
+        getAllEvents(false, [], resolve, reject);
+      }).then(response => {
+        return response;
+      });
+      const attendeesPromise = new Promise((resolve, reject) => {
+        getAllAttendees(false, [], resolve, reject);
+      }).then(response => {
+        return response;
+      });
+      let [program, events, attendees] = await Promise.all([
+        programPromise,
+        eventsPromise,
+        attendeesPromise
+      ]);
+      for (let series of program) {
+        series.events = events.filter(e => e.series_id === series.id);
+        for (let event of series.events) {
+          event.attendees = attendees.filter(a => a.event_id === event.id);
+        }
+      }
+      console.log("program", program);
+      return program;
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
   getFakeProgram({
     serieses_count = 4,
     events_per_series = 6,
     attendees_per_event = [5, 10] // a min max range}
   }) {
-    let program = { serieses: [] };
+    let program = [];
     for (let i = 0; i < serieses_count; i++) {
-      program.serieses.push(
+      program.push(
         this.getFakeSeries({
           events_count: events_per_series,
           attendees_per_event

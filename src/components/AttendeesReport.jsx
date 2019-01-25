@@ -23,7 +23,6 @@ class AttendeesReport extends Component {
     // // PS the setTimeout is only here to SIMULATE response lag
     // setTimeout(() => this.setState({ attendees: getAttendees(events) }), 2000);
     if (this.props.series) {
-      console.log("THIS.PROPS.SERIES");
       this.setState({ series: this.props.series }, () => {
         const cardsVisibility = {};
         for (let event of this.state.series.events) {
@@ -153,8 +152,8 @@ class AttendeesReport extends Component {
         ) : null}
 
         {this.state.series.events.map(e => (
-          <StickyContainer key={e.id}>
-            <div className="card">
+          <div className="card" key={e.id}>
+            <StickyContainer>
               <Sticky>
                 {({ style }) => (
                   <div style={style}>
@@ -201,9 +200,9 @@ class AttendeesReport extends Component {
                         <td className="number">{++b}</td>
                         <td className="name">{a.profile.name}</td>
                         <td className="date">
-                          {this.dealWIthDate(
+                          {/* {this.dealWIthDate(
                             e.orders.filter(o => o.id === a.order_id)[0].created
-                          )}
+                          )} */}
                         </td>
                         <td className="type">{a.ticket_class_name}</td>
                         <td className="price">{a.costs.gross.noic_display}</td>
@@ -212,8 +211,8 @@ class AttendeesReport extends Component {
                   </tbody>
                 </table>
               </Collapse>
-            </div>
-          </StickyContainer>
+            </StickyContainer>
+          </div>
         ))}
         {this.props.standalone ? (
           <div className="card totals-card">

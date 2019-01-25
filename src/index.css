@@ -63,4 +63,12 @@ code {
 .totals-card .card-header {
   background-color: white;
 }
+
+.PresenterReport > .card > .card-header {
+  padding: 1.4rem 1.25rem;
+}
+
+.series-header {
+  margin-bottom: 0;
+}
 /*# sourceMappingURL=index.css.map */

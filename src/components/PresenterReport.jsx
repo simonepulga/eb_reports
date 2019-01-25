@@ -5,27 +5,27 @@ import { Collapse } from "reactstrap";
 
 class PresenterReport extends Component {
   state = {
-    program: {},
+    program: [], // a program is an array of series objects
     cardsVisibility: {}
   };
 
   componentDidMount() {
-    this.setState(
-      {
-        program: EB.getFakeProgram({
-          serieses_count: 2,
-          events_per_series: 14,
-          attendees_per_event: [5, 10]
-        })
-      },
-      () => {
-        const cardsVisibility = {};
-        for (let series of this.state.program.serieses) {
-          cardsVisibility[series.id] = false;
+    // console.log(EB.getRealProgram());
+    EB.getRealProgram().then(response => {
+      this.setState(
+        {
+          program: response
+        },
+        () => {
+          const cardsVisibility = {};
+          if (!this.state.program) return true;
+          for (let series of this.state.program) {
+            cardsVisibility[series.id] = false;
+          }
+          this.setState({ cardsVisibility });
         }
-        this.setState({ cardsVisibility });
-      }
-    );
+      );
+    });
   }
 
   toggle(series_id) {
@@ -50,9 +50,57 @@ class PresenterReport extends Component {
     this.setState({ cardsVisibility });
   }
 
+  totalCapacity() {
+    let total = 0;
+    if (!this.state.program) return 0;
+    for (let s of this.state.program) {
+      if (s.events) {
+        for (let e of s.events) {
+          total += e.capacity;
+        }
+      }
+    }
+    return total;
+  }
+
+  totalSeriesCapacity(series) {
+    let total = 0;
+    if (!series.events) return 0;
+    for (let e of series.events) {
+      total += e.capacity;
+    }
+    return total;
+  }
+
+  totalAttendees() {
+    let total = 0;
+    if (!this.state.program) return 0;
+    for (let s of this.state.program) {
+      if (s.events) {
+        for (let e of s.events) {
+          if (e.attendees) {
+            total += e.attendees.length;
+          }
+        }
+      }
+    }
+    return total;
+  }
+
+  totalSeriesAttendees(series) {
+    let total = 0;
+    if (!series.events) return 0;
+    for (let e of series.events) {
+      if (e.attendees) {
+        total += e.attendees.length;
+      }
+    }
+    return total;
+  }
+
   render() {
     console.log(this.state);
-    if (!this.state.program.serieses) return <h2>Loading</h2>;
+    if (!this.state.program) return <h2>Loading</h2>;
     return (
       <div className="PresenterReport container">
         <header>
@@ -71,14 +119,20 @@ class PresenterReport extends Component {
         >
           Collapse all
         </button>
-        {this.state.program.serieses.map(s => (
+        {this.state.program.map(s => (
           <div className="card" key={s.id}>
-            <div className="card-header" onClick={() => this.toggle(s.id)}>
+            <div
+              className="card-header cursor-pointer"
+              onClick={() => this.toggle(s.id)}
+            >
               <div className="row">
                 <div className="col-8">
-                  <strong>{s.name.text}</strong>
+                  <h5 className="series-header">{s.name.text}</h5>
                 </div>
-                <div className="col-4">Total: xxxx / xxxx</div>
+                <div className="col-4 text-right">
+                  Total: {this.totalSeriesAttendees(s)} /{" "}
+                  {this.totalSeriesCapacity(s)}
+                </div>
               </div>
             </div>
             <Collapse isOpen={this.state.cardsVisibility[s.id]}>
