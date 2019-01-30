@@ -162,17 +162,17 @@ const EventbriteInterface = {
           event.attendees = attendees.filter(a => a.event_id === event.id);
         }
       }
-      console.log("program", program);
       return program;
     } catch (error) {
       console.log(error);
     }
   },
 
-  getFakeProgram({
+  async getFakeProgram({
     serieses_count = 4,
     events_per_series = 6,
-    attendees_per_event = [5, 10] // a min max range}
+    attendees_per_event = [5, 10], // a min max range}
+    delay = 0 // a delay to simulate an API response, in seconds
   }) {
     let program = [];
     for (let i = 0; i < serieses_count; i++) {
@@ -183,6 +183,7 @@ const EventbriteInterface = {
         })
       );
     }
+    await new Promise(resolve => setTimeout(resolve, delay * 1000));
     return program;
   },
 

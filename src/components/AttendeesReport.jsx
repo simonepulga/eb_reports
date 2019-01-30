@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import moment from "moment";
-import { Collapse } from "reactstrap";
-import { StickyContainer, Sticky } from "react-sticky";
 import EB from "../interfaces/EventbriteInterface";
+import AttendeesCard from "./AttendeesCard";
 
 class AttendeesReport extends Component {
   constructor(props) {
@@ -23,23 +22,27 @@ class AttendeesReport extends Component {
     // // PS the setTimeout is only here to SIMULATE response lag
     // setTimeout(() => this.setState({ attendees: getAttendees(events) }), 2000);
     if (this.props.series) {
-      this.setState({ series: this.props.series }, () => {
+      const series = this.props.series;
+      const cardsVisibility = {};
+      for (let event of series.events) {
+        cardsVisibility[event.id] = false;
+      }
+      this.setState({ series, cardsVisibility });
+    } else if (this.props.standalone) {
+      if (this.props.fakedata) {
+        const series = EB.getFakeSeries({});
         const cardsVisibility = {};
-        for (let event of this.state.series.events) {
+        for (let event of series.events) {
           cardsVisibility[event.id] = false;
         }
-        this.setState({ cardsVisibility });
-      });
-    } else {
-      console.log("CANNOT DETECT this.props.series");
-      console.log(this.props);
-      this.setState({ series: EB.getFakeSeries({}) }, () => {
-        const cardsVisibility = {};
-        for (let event of this.state.series.events) {
-          cardsVisibility[event.id] = false;
-        }
-        this.setState({ cardsVisibility });
-      });
+        console.log("series", series, cardsVisibility);
+        this.setState({ series, cardsVisibility }, () =>
+          console.log("state set")
+        );
+      } else {
+        // here we can implement a call to the EB Interface so long as we
+        // ensure to have a series id
+      }
     }
 
     // PLAY PEN
@@ -119,8 +122,9 @@ class AttendeesReport extends Component {
   }
 
   render() {
-    // console.log(this.state);
-    if (!this.state.series.events) return <h2>Loading</h2>;
+    if (!this.state.series.events) {
+      return <h2>Loading</h2>;
+    }
     return (
       <div className="AttendeesReport container">
         {this.props.standalone ? (
@@ -152,67 +156,12 @@ class AttendeesReport extends Component {
         ) : null}
 
         {this.state.series.events.map(e => (
-          <div className="card" key={e.id}>
-            <StickyContainer>
-              <Sticky>
-                {({ style }) => (
-                  <div style={style}>
-                    <div
-                      className="card-header cursor-pointer"
-                      onClick={() => this.toggle(e.id)}
-                    >
-                      <div className="row">
-                        <div className="col-9">
-                          {moment(e.start.local).format(
-                            "ddd D MMM YYYY - h:mma"
-                          )}
-                        </div>
-                        <div className="col-3 text-right">
-                          <span className="d-none d-sm-inline">Total</span>{" "}
-                          {e.attendees.length} / {e.capacity}
-                        </div>
-                      </div>
-                    </div>
-                    <Collapse isOpen={this.state.cardsVisibility[e.id]}>
-                      <table className="table table-bordered table-sm basic-attendee-table convenience-table">
-                        <thead className="card-table-head">
-                          <tr>
-                            <th className="number">#</th>
-                            <th className="name">Name</th>
-                            <th className="date">
-                              <span className="d-none d sm-inline">Date</span>{" "}
-                              Booked
-                            </th>
-                            <th className="type">Type</th>
-                            <th className="price">Price*</th>
-                          </tr>
-                        </thead>
-                      </table>
-                    </Collapse>
-                  </div>
-                )}
-              </Sticky>
-              <Collapse isOpen={this.state.cardsVisibility[e.id]}>
-                <table className="table table-bordered table-sm basic-attendee-table">
-                  <tbody>
-                    {e.attendees.map((a, b) => (
-                      <tr key={a.id}>
-                        <td className="number">{++b}</td>
-                        <td className="name">{a.profile.name}</td>
-                        <td className="date">
-                          {/* {this.dealWIthDate(
-                            e.orders.filter(o => o.id === a.order_id)[0].created
-                          )} */}
-                        </td>
-                        <td className="type">{a.ticket_class_name}</td>
-                        <td className="price">{a.costs.gross.noic_display}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Collapse>
-            </StickyContainer>
-          </div>
+          <AttendeesCard
+            key={e.id}
+            event={e}
+            visibility={this.state.cardsVisibility[e.id]}
+            toggleVisibility={() => this.toggle(e.id)}
+          />
         ))}
         {this.props.standalone ? (
           <div className="card totals-card">

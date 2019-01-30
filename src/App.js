@@ -6,8 +6,8 @@ class App extends Component {
   state = {};
 
   render() {
-    // return <AttendeesReport standalone={true}/>;
-    return <PresenterReport />;
+    // return <AttendeesReport standalone fakedata />;
+    return <PresenterReport fakedata />;
   }
 }
 

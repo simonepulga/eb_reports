@@ -10,40 +10,39 @@ class PresenterReport extends Component {
   };
 
   componentDidMount() {
-    // uncomment the section below to use test data
-    this.setState(
-      {
-        program: EB.getFakeProgram({
-          serieses_count: 4,
-          events_per_series: 6,
-          attendees_per_event: [5, 10] // a min max range}
-        })
-      },
-      () => {
+    if (this.props.fakedata) {
+      EB.getFakeProgram({
+        serieses_count: 4,
+        events_per_series: 6,
+        attendees_per_event: [5, 10], // a min max range
+        delay: 1 // a delay to simulate an API response, in seconds
+      }).then(response => {
+        const program = response;
         const cardsVisibility = {};
-        if (!this.state.program) return true;
-        for (let series of this.state.program) {
+        console.log("program", program);
+        if (!program) return true;
+        for (let series of program) {
           cardsVisibility[series.id] = false;
         }
-        this.setState({ cardsVisibility });
-      }
-    );
-    // uncomment the section below to use real data
-    // EB.getRealProgram().then(response => {
-    //   this.setState(
-    //     {
-    //       program: response
-    //     },
-    //     () => {
-    //       const cardsVisibility = {};
-    //       if (!this.state.program) return true;
-    //       for (let series of this.state.program) {
-    //         cardsVisibility[series.id] = false;
-    //       }
-    //       this.setState({ cardsVisibility });
-    //     }
-    //   );
-    // });
+        this.setState({
+          program,
+          cardsVisibility
+        });
+      });
+    } else {
+      EB.getRealProgram().then(response => {
+        const program = response;
+        const cardsVisibility = {};
+        if (!program) return true;
+        for (let series of program) {
+          cardsVisibility[series.id] = false;
+        }
+        this.setState({
+          program,
+          cardsVisibility
+        });
+      });
+    }
   }
 
   toggle(series_id) {
@@ -117,8 +116,15 @@ class PresenterReport extends Component {
   }
 
   render() {
-    console.log(this.state);
-    if (!this.state.program) return <h2>Loading</h2>;
+    // console.log("hwahooo!", this.state);
+    if (this.state.program.length === 0) {
+      return (
+        <div className="container" style={{ height: "100vh" }}>
+          <h2 style={{ textAlign: "center", lineHeight: "100vh" }}>Loading</h2>
+        </div>
+      );
+    }
+
     return (
       <div className="PresenterReport container">
         <header>
