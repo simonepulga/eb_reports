@@ -35,10 +35,7 @@ class AttendeesReport extends Component {
         for (let event of series.events) {
           cardsVisibility[event.id] = false;
         }
-        console.log("series", series, cardsVisibility);
-        this.setState({ series, cardsVisibility }, () =>
-          console.log("state set")
-        );
+        this.setState({ series, cardsVisibility });
       } else {
         // here we can implement a call to the EB Interface so long as we
         // ensure to have a series id
@@ -46,18 +43,6 @@ class AttendeesReport extends Component {
     }
 
     // PLAY PEN
-  }
-
-  dealWIthDate(date) {
-    return (
-      <React.Fragment>
-        {moment(date).format("DD/MM/YY")}{" "}
-        <span className="d-block d-sm-inline">
-          {moment(date).format("h:MM A")}
-        </span>
-      </React.Fragment>
-    );
-    // return moment(date).format("DD/MM/YY h:MM A");
   }
 
   toggle(event_id) {

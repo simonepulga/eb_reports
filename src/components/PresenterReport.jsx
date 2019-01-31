@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import EB from "../interfaces/EventbriteInterface";
 import AttendeesReport from "./AttendeesReport";
 import { Collapse } from "reactstrap";
+import moment from "moment";
 
 class PresenterReport extends Component {
   state = {
@@ -19,7 +20,6 @@ class PresenterReport extends Component {
       }).then(response => {
         const program = response;
         const cardsVisibility = {};
-        console.log("program", program);
         if (!program) return true;
         for (let series of program) {
           cardsVisibility[series.id] = false;
@@ -30,7 +30,12 @@ class PresenterReport extends Component {
         });
       });
     } else {
-      EB.getRealProgram().then(response => {
+      EB.getRealProgram({
+        sold_date_filter: {
+          from: moment("2019-01-30T00:00:00+10:00").valueOf(),
+          to: moment("2019-01-31T00:00:00+10:00").valueOf()
+        }
+      }).then(response => {
         const program = response;
         const cardsVisibility = {};
         if (!program) return true;
@@ -116,7 +121,6 @@ class PresenterReport extends Component {
   }
 
   render() {
-    // console.log("hwahooo!", this.state);
     if (this.state.program.length === 0) {
       return (
         <div className="container" style={{ height: "100vh" }}>
