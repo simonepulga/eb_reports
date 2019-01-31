@@ -3,10 +3,12 @@ import EB from "../interfaces/EventbriteInterface";
 import AttendeesReport from "./AttendeesReport";
 import { Collapse } from "reactstrap";
 import moment from "moment";
+import filters from "../filters/filters";
 
 class PresenterReport extends Component {
   state = {
     program: [], // a program is an array of series objects
+    apiResponse: [],
     cardsVisibility: {}
   };
 
@@ -26,16 +28,12 @@ class PresenterReport extends Component {
         }
         this.setState({
           program,
+          apiResponse: program,
           cardsVisibility
         });
       });
     } else {
-      EB.getRealProgram({
-        sold_date_filter: {
-          from: moment("2019-01-30T00:00:00+10:00").valueOf(),
-          to: moment("2019-01-31T00:00:00+10:00").valueOf()
-        }
-      }).then(response => {
+      EB.getRealProgram().then(response => {
         const program = response;
         const cardsVisibility = {};
         if (!program) return true;
@@ -44,6 +42,7 @@ class PresenterReport extends Component {
         }
         this.setState({
           program,
+          apiResponse: program,
           cardsVisibility
         });
       });
@@ -120,7 +119,17 @@ class PresenterReport extends Component {
     return total;
   }
 
+  filterByDateSold() {
+    const from = "2019-01-28";
+    const to = "2019-01-29";
+    const program = this.state.program;
+    this.setState({
+      program: filters.soldDate(program, { sold_date_filter: { from, to } })
+    });
+  }
+
   render() {
+    console.log(this.state);
     if (this.state.program.length === 0) {
       return (
         <div className="container" style={{ height: "100vh" }}>
@@ -147,6 +156,12 @@ class PresenterReport extends Component {
         >
           Collapse all
         </button>
+        {/* <button
+          className="btn btn-outline-secondary"
+          onClick={() => this.filterByDateSold()}
+        >
+          Filter
+        </button> */}
         {this.state.program.map(s => (
           <div className="card" key={s.id}>
             <div

@@ -102,8 +102,11 @@ const getAllAttendees = (cont_token, attendees, resolve, reject) => {
       }`
     )
     .then(response => {
-      const retrievedAttendees = attendees.concat(response.attendees);
+      console.log("RESPONSE RECEIVED:", response);
+      attendees = attendees.concat(response.attendees);
+      console.log("attendees", attendees);
       if (response.pagination.has_more_items) {
+        console.log("PAGINATION TRIGGERED");
         getAllAttendees(
           response.pagination.continuation,
           attendees,
@@ -111,7 +114,7 @@ const getAllAttendees = (cont_token, attendees, resolve, reject) => {
           reject
         );
       } else {
-        resolve(retrievedAttendees);
+        resolve(attendees);
       }
     })
     .catch(error => {
@@ -131,7 +134,7 @@ const EventbriteInterface = {
     //   });
   },
 
-  async getRealProgram(filters = { sold_date_filter: {} }) {
+  async getRealProgram() {
     try {
       const programPromise = new Promise((resolve, reject) => {
         getAllSerieses(false, [], resolve, reject);
@@ -153,54 +156,15 @@ const EventbriteInterface = {
         eventsPromise,
         attendeesPromise
       ]);
-
-      // 👇 We will probs extract this to its own function that takes
-      // [program, events, attendees] from above plus a filter and
-      // returns a program we can use.
-
-      if (Object.values(filters.sold_date_filter).length > 0) {
-        attendees = attendees.filter(a => {
-          if (
-            (filters.sold_date_filter.from
-              ? // returns millisecs from epoch in UTC
-                moment(a.created).valueOf() >=
-                // must provide this as millisecs from epoch in UTC
-                filters.sold_date_filter.from
-              : true) &&
-            (filters.sold_date_filter.to
-              ? // returns millisecs from epoch in UTC
-                moment(a.created).valueOf() <
-                // must provide this as millisecs from epoch in UTC
-                filters.sold_date_filter.to
-              : true)
-          )
-            return true;
-        });
-      }
-
-      // Attach all (filtered) attendees to their events
-      for (let event of events) {
-        event.attendees = attendees.filter(a => a.event_id === event.id);
-      }
-      // Remove events with no attendees
-      events = events.filter(e => e.attendees.length > 0);
-      //
+      console.log("ATTENDEES", attendees);
+      // construct the program object
+      // program: [series1, series2: {events: [event1, event2: {attendees: [att1, att2]}]}]
       for (let series of program) {
         series.events = events.filter(e => e.series_id === series.id);
+        for (let event of series.events) {
+          event.attendees = attendees.filter(a => a.event_id === event.id);
+        }
       }
-      program = program.filter(s => s.events.length > 0);
-
-      // KEEP THIS VERSION: it shows performances with 0 sales too.
-      // for (let series of program) {
-      //   series.events = events.filter(e => e.series_id === series.id);
-      //   for (let event of series.events) {
-      //     event.attendees = attendees.filter(a => a.event_id === event.id);
-      //   }
-      // }
-      // if(sold_date_filter) {
-      //   program.series
-      // }
-      // 👆
       return program;
     } catch (error) {
       console.log(error);
