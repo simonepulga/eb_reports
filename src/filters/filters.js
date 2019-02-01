@@ -1,26 +1,89 @@
-import moment from "moment";
+import moment from "moment-timezone";
 
-export default class filters {
-  soldDate(program, sold_date_filter) {
-    console.log("filters/filter.soldDate() Called");
+const filters = {
+  soldDate(program, sold_date_filter, state) {
+    // we can expect sold_date_filter values to be in local time,
+    // and must convert to UTC for this to work
+    if (sold_date_filter.from) {
+      console.log("FROM conversion triggered");
+      sold_date_filter.from = moment.tz(
+        sold_date_filter.from,
+        "Australia/Melbourne"
+      );
+    }
+    if (sold_date_filter.to) {
+      console.log("TO conversion triggered");
+
+      sold_date_filter.to = moment.tz(
+        sold_date_filter.to,
+        "Australia/Melbourne"
+      );
+    }
+    console.log("after filter transform", sold_date_filter);
+
     for (let series of program) {
-      for (let event of series) {
-        event.attendees.filter(a => {
+      for (let event of series.events) {
+        event.attendees = event.attendees.filter(a => {
           if (
             (sold_date_filter.from
               ? // returns millisecs from epoch in UTC
                 moment(a.created).valueOf() >=
-                // must provide this as millisecs from epoch in UTC
-                sold_date_filter.from
+                // must provide this as Australia/Melbourne timezone
+                sold_date_filter.from.valueOf()
               : true) &&
             (sold_date_filter.to
               ? // returns millisecs from epoch in UTC
                 moment(a.created).valueOf() <
-                // must provide this as millisecs from epoch in UTC
-                sold_date_filter.to
+                // must provide this as Australia/Melbourne timezone
+                sold_date_filter.to.valueOf()
               : true)
-          )
+          ) {
+            // UNCOMMENT for a verbose explanation of why this attendee belongs in the list
+            // console.log(
+            //   "I think this attendee belongs in the filtered list: ",
+            //   a
+            // );
+            // console.log("Its .created value is:", a.created);
+            // console.log("which converts to:", moment(a.created).valueOf());
+            // console.log(
+            //   "I think that is greater than the FROM value, which I have as:",
+            //   sold_date_filter.from.valueOf()
+            // );
+            // console.log(
+            //   "Further, its .created stamp (again):",
+            //   moment(a.created).valueOf()
+            // );
+            // console.log(
+            //   "Which I think is lesser than the TO value, which I have as:",
+            //   sold_date_filter.to.valueOf()
+            // );
+            // console.log("END OF THIS ATTENDEE");
+            // --- END UNCOMMENT
             return true;
+          } else {
+            // UNCOMMENT for a verbose explanation of why this attendee does not belong in the list
+            // console.log(
+            //   "I DON'T think this attendee belongs in the filtered list: ",
+            //   a
+            // );
+            // console.log("Its .created value is:", a.created);
+            // console.log("which converts to:", moment(a.created).valueOf());
+            // console.log(
+            //   "To fit, that should be greater than the FROM value, which I have as:",
+            //   sold_date_filter.from.valueOf()
+            // );
+            // console.log(
+            //   "Further, its .created stamp (again):",
+            //   moment(a.created).valueOf()
+            // );
+            // console.log(
+            //   "Should be less than the TO value, which I have as:",
+            //   sold_date_filter.to.valueOf()
+            // );
+            // console.log("END OF THIS ATTENDEE");
+            // --- END UNCOMMENT
+            return false;
+          }
         });
       }
       // Remove events with no attendees (we are still in the "series of program" loop)
@@ -28,15 +91,8 @@ export default class filters {
     }
     // Remove serieses with no events (we are out of the loop)
     program = program.filter(s => s.events.length > 0);
-    // events = events.filter(e => e.attendees.length > 0);
-    // Attach all (filtered) attendees to their events
-    // for (let event of events) {
-    //   event.attendees = attendees.filter(a => a.event_id === event.id);
-    // }
-    //
-    // for (let series of program) {
-    //   series.events = events.filter(e => e.series_id === series.id);
-    // }
     return program;
   }
-}
+};
+
+export default filters;

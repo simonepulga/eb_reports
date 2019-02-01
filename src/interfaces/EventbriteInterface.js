@@ -47,7 +47,7 @@ const getAllSerieses = (cont_token, program, resolve, reject) => {
       }`
     )
     .then(response => {
-      const retrievedSerieses = program.concat(response.events);
+      program = program.concat(response.events);
       if (response.pagination.has_more_items) {
         getAllSerieses(
           response.pagination.continuation,
@@ -56,7 +56,7 @@ const getAllSerieses = (cont_token, program, resolve, reject) => {
           reject
         );
       } else {
-        resolve(retrievedSerieses);
+        resolve(program);
       }
     })
     .catch(error => {
@@ -77,11 +77,11 @@ const getAllEvents = (cont_token, events, resolve, reject) => {
       }`
     )
     .then(response => {
-      const retrievedEvents = events.concat(response.events);
+      events = events.concat(response.events);
       if (response.pagination.has_more_items) {
         getAllEvents(response.pagination.continuation, events, resolve, reject);
       } else {
-        resolve(retrievedEvents);
+        resolve(events);
       }
     })
     .catch(error => {
@@ -102,11 +102,8 @@ const getAllAttendees = (cont_token, attendees, resolve, reject) => {
       }`
     )
     .then(response => {
-      console.log("RESPONSE RECEIVED:", response);
       attendees = attendees.concat(response.attendees);
-      console.log("attendees", attendees);
       if (response.pagination.has_more_items) {
-        console.log("PAGINATION TRIGGERED");
         getAllAttendees(
           response.pagination.continuation,
           attendees,
