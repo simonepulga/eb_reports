@@ -9,7 +9,10 @@ class PresenterReport extends Component {
   state = {
     program: [], // a program is an array of series objects
     apiResponse: [], // the original API response
-    cardsVisibility: {}
+    cardsVisibility: {},
+    isLoading: true,
+    filterDateFrom: "",
+    filterDateTo: ""
   };
 
   componentDidMount() {
@@ -35,7 +38,8 @@ class PresenterReport extends Component {
         this.setState({
           program,
           apiResponse: cloneDeep(program),
-          cardsVisibility
+          cardsVisibility,
+          isLoading: false
         });
       });
     } else {
@@ -54,7 +58,8 @@ class PresenterReport extends Component {
         this.setState({
           program,
           apiResponse: cloneDeep(program),
-          cardsVisibility
+          cardsVisibility,
+          isLoading: false
         });
       });
     }
@@ -119,9 +124,12 @@ class PresenterReport extends Component {
   }
 
   totalSeriesCapacity(series) {
+    const origSeries = this.state.apiResponse.filter(
+      s => s.id === series.id
+    )[0];
     let total = 0;
-    if (!series.events) return 0;
-    for (let e of series.events) {
+    if (!origSeries.events) return 0;
+    for (let e of origSeries.events) {
       total += e.capacity;
     }
     return total;
@@ -155,13 +163,16 @@ class PresenterReport extends Component {
 
   unfilter() {
     this.setState({
-      program: this.state.apiResponse
+      program: this.state.apiResponse,
+      filterDateFrom: "",
+      filterDateTo: ""
     });
   }
 
   filterByDateSold() {
-    const from = "2019-01-29";
-    const to = "2019-01-30";
+    // console.log(this.state.filterDateFrom);
+    const from = this.state.filterDateFrom;
+    const to = this.state.filterDateTo;
     const result = filters.soldDate(
       cloneDeep(this.state.apiResponse),
       {
@@ -175,9 +186,117 @@ class PresenterReport extends Component {
     });
   }
 
-  render() {
-    // console.log(this.state);
+  handleDateFilterChange(event) {
+    this.setState({ [event.target.name]: event.target.value });
+  }
+
+  renderHeader() {
+    return (
+      <React.Fragment>
+        <div className="row">
+          <header>
+            <h2>Presenter Report</h2>
+            <h4>This is where the business happens.</h4>
+          </header>
+        </div>
+        <div className="row">
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.expandAll()}
+          >
+            Expand all
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.collapseAll()}
+          >
+            Collapse all
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.filterByDateSold()}
+          >
+            Filter
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.unfilter()}
+          >
+            Unfilter
+          </button>
+        </div>
+        <div className="row">
+          <div className="col-6">
+            From:{" "}
+            <input
+              type="date"
+              name="filterDateFrom"
+              value={this.state.filterDateFrom}
+              onChange={this.handleDateFilterChange.bind(this)}
+            />
+          </div>
+          <div className="col-6">
+            To:{" "}
+            <input
+              type="date"
+              name="filterDateTo"
+              value={this.state.filterDateTo}
+              onChange={this.handleDateFilterChange.bind(this)}
+            />
+          </div>
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  renderBody() {
     if (this.state.program.length === 0) {
+      return (
+        <div className="container" style={{ height: "100vh" }}>
+          <h2 style={{ textAlign: "center" }}>No results</h2>
+          <p style={{ textAlign: "center" }}>Please try different filters</p>
+        </div>
+      );
+    } else {
+      return (
+        <React.Fragment>
+          {this.state.program.map(s => (
+            <div className="card" key={s.id}>
+              <div
+                className="card-header cursor-pointer"
+                onClick={() => this.toggle(s.id)}
+              >
+                <div className="row">
+                  <div className="col-8">
+                    <h5 className="series-header">{s.name.text}</h5>
+                  </div>
+                  <div className="col-4 text-right">
+                    Total: {this.totalSeriesAttendees(s)} /{" "}
+                    {this.totalSeriesCapacity(s)}
+                  </div>
+                </div>
+              </div>
+              <Collapse isOpen={this.state.cardsVisibility[s.id].self}>
+                <div className="card-body">
+                  <AttendeesReport
+                    series={s}
+                    toggle={(a, b) => this.toggleChild(a, b)}
+                    cardsVisibility={this.state.cardsVisibility[s.id]}
+                    handleExpandAll={() => this.expandAllChildren(s.id)}
+                    handleCollapseAll={() => this.collapseAllChildren(s.id)}
+                  />
+                </div>
+              </Collapse>
+            </div>
+          ))}
+        </React.Fragment>
+      );
+    }
+  }
+
+  render() {
+    console.log(this.state);
+    if (this.state.isLoading) {
       return (
         <div className="container" style={{ height: "100vh" }}>
           <h2 style={{ textAlign: "center", lineHeight: "100vh" }}>Loading</h2>
@@ -187,63 +306,9 @@ class PresenterReport extends Component {
 
     return (
       <div className="PresenterReport container">
-        <header>
-          <h2>Presenter Report</h2>
-          <h4>This is where the business happens.</h4>
-        </header>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => this.expandAll()}
-        >
-          Expand all
-        </button>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => this.collapseAll()}
-        >
-          Collapse all
-        </button>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => this.filterByDateSold()}
-        >
-          Filter
-        </button>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => this.unfilter()}
-        >
-          Unfilter
-        </button>
-        {this.state.program.map(s => (
-          <div className="card" key={s.id}>
-            <div
-              className="card-header cursor-pointer"
-              onClick={() => this.toggle(s.id)}
-            >
-              <div className="row">
-                <div className="col-8">
-                  <h5 className="series-header">{s.name.text}</h5>
-                </div>
-                <div className="col-4 text-right">
-                  Total: {this.totalSeriesAttendees(s)} /{" "}
-                  {this.totalSeriesCapacity(s)}
-                </div>
-              </div>
-            </div>
-            <Collapse isOpen={this.state.cardsVisibility[s.id].self}>
-              <div className="card-body">
-                <AttendeesReport
-                  series={s}
-                  toggle={(a, b) => this.toggleChild(a, b)}
-                  cardsVisibility={this.state.cardsVisibility[s.id]}
-                  handleExpandAll={() => this.expandAllChildren(s.id)}
-                  handleCollapseAll={() => this.collapseAllChildren(s.id)}
-                />
-              </div>
-            </Collapse>
-          </div>
-        ))}
+        {this.renderHeader()}
+
+        {this.renderBody()}
       </div>
     );
   }
