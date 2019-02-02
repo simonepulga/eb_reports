@@ -85,7 +85,7 @@ class AttendeesReport extends Component {
           <AttendeesCard
             key={e.id}
             event={e}
-            visibility={this.props.cardsVisibility.children[e.id]} // mmmmaybe.
+            visibility={this.props.cardsVisibility.children[e.id]}
             toggleVisibility={() =>
               this.props.toggle(this.props.series.id, e.id)
             }

@@ -7,7 +7,7 @@ class App extends Component {
 
   render() {
     // return <AttendeesReport standalone fakedata />;
-    return <PresenterReport  />;
+    return <PresenterReport fakedata />;
   }
 }
 
