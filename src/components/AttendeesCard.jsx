@@ -6,10 +6,11 @@ import AttendeesTableHeader from "./AttendeesTableHeader";
 import AttendeesTableBody from "./AttendeesTableBody";
 
 class AttendeesCard extends Component {
-  render() {
+  toStickOrNotToStick() {
     const { event: e, visibility, toggleVisibility } = this.props;
-    return (
-      <div className="card">
+
+    if (visibility) {
+      return (
         <StickyContainer>
           <Sticky>
             {({ style }) => (
@@ -27,8 +28,27 @@ class AttendeesCard extends Component {
             <AttendeesTableBody event={e} />
           </Collapse>
         </StickyContainer>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <React.Fragment>
+          <div>
+            <div onClick={toggleVisibility}>
+              <AttendeesCardHeader event={e} />
+            </div>
+            <Collapse isOpen={visibility}>
+              <AttendeesTableHeader />
+            </Collapse>
+          </div>
+          <Collapse isOpen={visibility}>
+            <AttendeesTableBody event={e} />
+          </Collapse>
+        </React.Fragment>
+      );
+    }
+  }
+  render() {
+    return <div className="card">{this.toStickOrNotToStick()}</div>;
   }
 }
 

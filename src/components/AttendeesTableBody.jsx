@@ -31,7 +31,7 @@ class AttendeesTableBody extends Component {
               <td className="name">{a.profile.name}</td>
               <td className="date">{this.dealWIthDate(a.created)}</td>
               <td className="type">{a.ticket_class_name}</td>
-              <td className="price">{a.costs.gross.noic_display}</td>
+              <td className="price">{a.costs.gross.display}</td>
             </tr>
           ))}
         </tbody>

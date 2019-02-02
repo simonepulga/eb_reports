@@ -178,23 +178,30 @@ class PresenterReport extends Component {
     });
   }
 
-  filterByDateSold() {
-    // console.log(this.state.filters.saleDate.filterDateFrom);
+  applyFilters() {
+    let result = _.cloneDeep(this.state.apiResponse);
+    result = filters.bySelection(result, this.state.filters.selected);
+    result = this.filterByDateSold(result);
+    this.setState({
+      program: result,
+      isFiltered: true
+    });
+  }
+
+  filterByDateSold(program) {
     const {
       filterDateFrom: from,
       filterDateTo: to
     } = this.state.filters.saleDate;
-    const result = filters.soldDate(
-      _.cloneDeep(this.state.apiResponse),
-      {
+
+    if (from || to) {
+      return filters.soldDate(program, {
         from,
         to
-      },
-      this.state
-    );
-    this.setState({
-      program: result
-    });
+      });
+    } else {
+      return program;
+    }
   }
 
   handleDateFilterChange(event) {
@@ -332,7 +339,7 @@ class PresenterReport extends Component {
           <div className="col-sm-6">
             <button
               className="btn mb-0 btn-outline-secondary"
-              onClick={() => this.filterByDateSold()}
+              onClick={() => this.applyFilters()}
             >
               Filter
             </button>

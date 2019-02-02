@@ -1,7 +1,12 @@
 import moment from "moment-timezone";
 
 const filters = {
-  soldDate(program, sold_date_filter, state) {
+  bySelection(program, matcher) {
+    if (matcher === "All Shows") return program;
+    return program.filter(s => s.id === matcher);
+  },
+
+  soldDate(program, sold_date_filter) {
     // we can expect sold_date_filter values to be in local time,
     // and must convert to UTC for this to work
     if (sold_date_filter.from) {
@@ -14,12 +19,10 @@ const filters = {
     if (sold_date_filter.to) {
       console.log("TO conversion triggered");
 
-      sold_date_filter.to = moment.tz(
-        sold_date_filter.to,
-        "Australia/Melbourne"
-      );
+      sold_date_filter.to = moment
+        .tz(sold_date_filter.to, "Australia/Melbourne")
+        .add(1, "d");
     }
-    console.log("after filter transform", sold_date_filter);
 
     for (let series of program) {
       for (let event of series.events) {
@@ -91,6 +94,7 @@ const filters = {
     }
     // Remove serieses with no events (we are out of the loop)
     program = program.filter(s => s.events.length > 0);
+
     return program;
   }
 };
