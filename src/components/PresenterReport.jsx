@@ -190,13 +190,17 @@ class PresenterReport extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
+  handleClearSalesDate = () => {
+    this.setState({ filterDateFrom: "", filterDateTo: "" });
+  };
+
   renderHeader() {
     return (
       <React.Fragment>
         <div className="row">
           <header>
             <h2>Presenter Report</h2>
-            <h4>This is where the business happens.</h4>
+            <h4>Until AI finally emerges, we do it by hand like peasants.</h4>
           </header>
         </div>
         <div className="row">
@@ -212,7 +216,7 @@ class PresenterReport extends Component {
           >
             Collapse all
           </button>
-          <button
+          {/* <button
             className="btn btn-outline-secondary"
             onClick={() => this.filterByDateSold()}
           >
@@ -223,28 +227,56 @@ class PresenterReport extends Component {
             onClick={() => this.unfilter()}
           >
             Unfilter
-          </button>
+          </button> */}
         </div>
-        <div className="row">
-          <div className="col-6">
-            From:{" "}
-            <input
-              type="date"
-              name="filterDateFrom"
-              value={this.state.filterDateFrom}
-              onChange={this.handleDateFilterChange.bind(this)}
-            />
+      </React.Fragment>
+    );
+  }
+
+  renderFilters() {
+    return (
+      <React.Fragment>
+        <hr />
+        <div className="form-inline align-items-center">
+          <div className="col-2">
+            <strong>Sales Date</strong>
           </div>
-          <div className="col-6">
-            To:{" "}
-            <input
-              type="date"
-              name="filterDateTo"
-              value={this.state.filterDateTo}
-              onChange={this.handleDateFilterChange.bind(this)}
-            />
+          <div className="input-group col-3">
+            <label className="col-2">From: </label>
+            <div className="col-10">
+              <input
+                type="date"
+                name="filterDateFrom"
+                value={this.state.filterDateFrom}
+                onChange={this.handleDateFilterChange.bind(this)}
+                placeholder="placeholder"
+                className="form-control"
+              />
+            </div>
+          </div>
+          <div className="input-group col-3">
+            <label className="col-2">To: </label>
+            <div className="col-10">
+              <input
+                type="date"
+                name="filterDateTo"
+                value={this.state.filterDateTo}
+                onChange={this.handleDateFilterChange.bind(this)}
+                placeholder="placeholder"
+                className="form-control"
+              />
+            </div>
+          </div>
+          <div className="col-4">
+            <button
+              className="btn mb-0 btn-outline-secondary float-right"
+              onClick={this.handleClearSalesDate}
+            >
+              Clear
+            </button>
           </div>
         </div>
+        <hr />
       </React.Fragment>
     );
   }
@@ -307,7 +339,7 @@ class PresenterReport extends Component {
     return (
       <div className="PresenterReport container">
         {this.renderHeader()}
-
+        {/* {this.renderFilters()} */}
         {this.renderBody()}
       </div>
     );

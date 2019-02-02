@@ -7,8 +7,10 @@ class App extends Component {
 
   render() {
     // return <AttendeesReport standalone fakedata />;
-    return <PresenterReport />;
+    return <PresenterReport  />;
   }
 }
 
 export default App;
+console.log("he");
+console.log("he");
