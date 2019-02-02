@@ -15,8 +15,12 @@ class PresenterReport extends Component {
     filters: {
       selected: "All Shows",
       saleDate: {
-        filterDateFrom: "",
-        filterDateTo: ""
+        from: "",
+        to: ""
+      },
+      perfDate: {
+        from: "",
+        to: ""
       }
     }
   };
@@ -173,7 +177,8 @@ class PresenterReport extends Component {
       isFiltered: false,
       filters: {
         selected: "All Shows",
-        saleDate: { filterDateFrom: "", filterDateTo: "" }
+        saleDate: { from: "", to: "" },
+        perfDate: { from: "", to: "" }
       }
     });
   }
@@ -181,6 +186,7 @@ class PresenterReport extends Component {
   applyFilters() {
     let result = _.cloneDeep(this.state.apiResponse);
     result = filters.bySelection(result, this.state.filters.selected);
+    result = this.filterByPerfDate(result);
     result = this.filterByDateSold(result);
     this.setState({
       program: result,
@@ -189,13 +195,23 @@ class PresenterReport extends Component {
   }
 
   filterByDateSold(program) {
-    const {
-      filterDateFrom: from,
-      filterDateTo: to
-    } = this.state.filters.saleDate;
+    const { from, to } = this.state.filters.saleDate;
 
     if (from || to) {
       return filters.soldDate(program, {
+        from,
+        to
+      });
+    } else {
+      return program;
+    }
+  }
+
+  filterByPerfDate(program) {
+    const { from, to } = this.state.filters.perfDate;
+
+    if (from || to) {
+      return filters.perfDate(program, {
         from,
         to
       });
@@ -208,8 +224,8 @@ class PresenterReport extends Component {
     this.setState({
       filters: {
         ...this.state.filters,
-        saleDate: {
-          ...this.state.filters.saleDate,
+        [event.target.dataset.filtertype]: {
+          ...this.state.filters[event.target.dataset.filtertype],
           [event.target.name]: event.target.value
         }
       }
@@ -220,7 +236,7 @@ class PresenterReport extends Component {
     this.setState({
       filters: {
         ...this.state.filters,
-        saleDate: { filterDateFrom: "", filterDateTo: "" }
+        saleDate: { from: "", to: "" }
       }
     });
   };
@@ -303,8 +319,9 @@ class PresenterReport extends Component {
               <div className="col-10">
                 <input
                   type="date"
-                  name="filterDateFrom"
-                  value={this.state.filters.saleDate.filterDateFrom}
+                  name="from"
+                  data-filtertype="saleDate"
+                  value={this.state.filters.saleDate.from}
                   onChange={this.handleDateFilterChange.bind(this)}
                   placeholder="placeholder"
                   className="form-control"
@@ -316,8 +333,9 @@ class PresenterReport extends Component {
               <div className="col-10">
                 <input
                   type="date"
-                  name="filterDateTo"
-                  value={this.state.filters.saleDate.filterDateTo}
+                  name="to"
+                  data-filtertype="saleDate"
+                  value={this.state.filters.saleDate.to}
                   onChange={this.handleDateFilterChange.bind(this)}
                   placeholder="placeholder"
                   className="form-control"
@@ -328,6 +346,50 @@ class PresenterReport extends Component {
               <button
                 className="btn mt-3 mt-sm-auto mr-3 mr-sm-0 mb-0 btn-outline-secondary float-right"
                 onClick={this.handleClearSalesDate}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+        <hr />
+        <div className="row">
+          <div className="form-inline align-items-center col-12">
+            <div className="col-sm-2">
+              <strong>Performance Date</strong>
+            </div>
+            <div className="input-group col-sm-3">
+              <label className="col-2">From: </label>
+              <div className="col-10">
+                <input
+                  type="date"
+                  name="from"
+                  data-filtertype="perfDate"
+                  value={this.state.filters.perfDate.from}
+                  onChange={this.handleDateFilterChange.bind(this)}
+                  placeholder="placeholder"
+                  className="form-control"
+                />
+              </div>
+            </div>
+            <div className="input-group col-sm-3">
+              <label className="col-2">To: </label>
+              <div className="col-10">
+                <input
+                  type="date"
+                  name="to"
+                  data-filtertype="perfDate"
+                  value={this.state.filters.perfDate.to}
+                  onChange={this.handleDateFilterChange.bind(this)}
+                  placeholder="placeholder"
+                  className="form-control"
+                />
+              </div>
+            </div>
+            <div className="col-sm-4 pr-auto pr-sm-0">
+              <button
+                className="btn mt-3 mt-sm-auto mr-3 mr-sm-0 mb-0 btn-outline-secondary float-right"
+                onClick={this.handleClearPerfDate}
               >
                 Clear
               </button>

@@ -6,6 +6,54 @@ const filters = {
     return program.filter(s => s.id === matcher);
   },
 
+  perfDate(program, perf_date_filter) {
+    console.log("program before date filter", program);
+    if (perf_date_filter.from) {
+      console.log("FROM conversion triggered");
+      perf_date_filter.from = moment.tz(
+        perf_date_filter.from,
+        "Australia/Melbourne"
+      );
+    }
+    if (perf_date_filter.to) {
+      console.log("TO conversion triggered");
+
+      perf_date_filter.to = moment
+        .tz(perf_date_filter.to, "Australia/Melbourne")
+        .add(1, "d");
+    }
+
+    for (let series of program) {
+      series.events = series.events.filter(e => {
+        if (
+          (perf_date_filter.from
+            ? // returns millisecs from epoch in UTC
+              moment(e.start.utc).valueOf() >=
+              // must provide this as Australia/Melbourne timezone
+              perf_date_filter.from.valueOf()
+            : true) &&
+          (perf_date_filter.to
+            ? // returns millisecs from epoch in UTC
+              moment(e.start.utc).valueOf() <
+              // must provide this as Australia/Melbourne timezone
+              perf_date_filter.to.valueOf()
+            : true)
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+    }
+    console.log("program after date filter", program);
+
+    // Remove serieses with no events (we are out of the loop)
+    program = program.filter(s => s.events.length > 0);
+    console.log("program before return", program);
+
+    return program;
+  },
+
   soldDate(program, sold_date_filter) {
     // we can expect sold_date_filter values to be in local time,
     // and must convert to UTC for this to work
