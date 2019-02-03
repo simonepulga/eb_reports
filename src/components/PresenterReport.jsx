@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 import EB from "../interfaces/EventbriteInterface";
 import AttendeesReport from "./AttendeesReport";
-import { Collapse } from "reactstrap";
+import {
+  Collapse,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
+} from "reactstrap";
 import _ from "lodash";
+import moment from "moment";
 import filters from "../filters/filters";
 
 class PresenterReport extends Component {
@@ -10,6 +17,7 @@ class PresenterReport extends Component {
     program: [], // a program is an array of series objects
     apiResponse: [], // the original API response
     cardsVisibility: {},
+    dropdownOpen: false,
     isLoading: true,
     isFiltered: false,
     filters: {
@@ -88,7 +96,7 @@ class PresenterReport extends Component {
     this.setState({ cardsVisibility });
   }
 
-  expandAll() {
+  expand() {
     let cardsVisibility = _.cloneDeep(this.state.cardsVisibility);
     for (let key in cardsVisibility) {
       cardsVisibility[key].self = true;
@@ -96,18 +104,31 @@ class PresenterReport extends Component {
     this.setState({ cardsVisibility });
   }
 
-  expandAllChildren(series_id) {
+  setVisibilityForAll(value) {
     let cardsVisibility = _.cloneDeep(this.state.cardsVisibility);
-    for (let key in cardsVisibility[series_id].children) {
-      cardsVisibility[series_id].children[key] = true;
+    for (let key in cardsVisibility) {
+      cardsVisibility[key].self = value;
+      if (cardsVisibility[key].children) {
+        for (let i in cardsVisibility[key].children) {
+          cardsVisibility[key].children[i] = value;
+        }
+      }
     }
     this.setState({ cardsVisibility });
   }
 
+  expandAll() {
+    this.setVisibilityForAll(true);
+  }
+
   collapseAll() {
+    this.setVisibilityForAll(false);
+  }
+
+  expandAllChildren(series_id) {
     let cardsVisibility = _.cloneDeep(this.state.cardsVisibility);
-    for (let key in cardsVisibility) {
-      cardsVisibility[key].self = false;
+    for (let key in cardsVisibility[series_id].children) {
+      cardsVisibility[series_id].children[key] = true;
     }
     this.setState({ cardsVisibility });
   }
@@ -169,6 +190,39 @@ class PresenterReport extends Component {
       }
     }
     return total;
+  }
+
+  seriesHeaderDetails(series) {
+    // SUN 3 FEB | 5 US, 1 DS | 5:30, 7:00
+    const { events } = series;
+    let result = "";
+    if (events.length === 0) return result;
+    // Find and display opening night
+    result += _.upperCase(moment(events[0].start.local).format("ddd D MMM"));
+    result += " | ";
+    // Work out how many US and DS shows
+    let us_ds = [0, 0];
+    for (let event of events) {
+      event.capacity >= 45 ? us_ds[0]++ : us_ds[1]++;
+    }
+    if (us_ds[0]) result += `${us_ds[0]} US`;
+    if (us_ds[0] && us_ds[1]) result += ",";
+    if (us_ds[1]) result += ` ${us_ds[1]} DS`;
+    result += " | ";
+    // Work out show times
+    let times = [];
+    for (let event of events) {
+      times.push(moment(event.start.local).format("h:mm"));
+    }
+    times = _.uniq(times);
+    for (let i = 0; i < times.length; i++) {
+      result += times[i];
+      if (i < times.length - 1) {
+        result += ", ";
+      }
+    }
+    // Return the finished string
+    return result;
   }
 
   unfilter() {
@@ -415,7 +469,13 @@ class PresenterReport extends Component {
           <div className="col-sm-6 mt-3 mt-sm-0">
             <div className="float-none float-sm-right">
               <button
-                className="btn mb-0 btn-outline-secondary"
+                className="btn mb-0 mr-auto mr-sm-0 btn-outline-secondary"
+                onClick={() => this.expand()}
+              >
+                Expand
+              </button>
+              <button
+                className="btn mb-0 mr-auto mr-sm-0 btn-outline-secondary"
                 onClick={() => this.expandAll()}
               >
                 Expand all
@@ -454,6 +514,7 @@ class PresenterReport extends Component {
                 <div className="row">
                   <div className="col-8">
                     <h5 className="series-header">{s.name.text}</h5>
+                    <p className="small mb-0">{this.seriesHeaderDetails(s)}</p>
                   </div>
                   <div className="col-4 text-right">
                     Total: {this.totalSeriesAttendees(s)} /{" "}
