@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^0.18.0",
     "bootstrap": "^4.2.1",
     "elm-webpack-loader": "^5.0.0",
     "eventbrite": "^1.0.4",
@@ -19,7 +18,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "npm run build:react && npm run build:bundle",
+    "build:react": "react-scripts build",
+    "build:bundle": "webpack --config webpack.config.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -33,6 +34,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "faker": "^4.1.0"
+    "faker": "^4.1.0",
+    "webpack-cli": "^3.2.3"
   }
 }

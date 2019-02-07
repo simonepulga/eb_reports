@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import moment from "moment";
-import EB from "../interfaces/EventbriteInterface";
+// import moment from "moment";
+// import EB from "../interfaces/EventbriteInterface";
 import AttendeesCard from "./AttendeesCard";
 
 class AttendeesReport extends Component {

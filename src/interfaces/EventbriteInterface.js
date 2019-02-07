@@ -4,7 +4,7 @@ import fakeAttendee from "../factories/fakeAttendee";
 import fakeOrder from "../factories/fakeOrder";
 import moment from "moment";
 import faker from "faker";
-import axios from "axios";
+// import axios from "axios";
 import eventbrite from "eventbrite";
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;

@@ -1,13 +1,7 @@
 import React, { Component } from "react";
 import EB from "../interfaces/EventbriteInterface";
 import AttendeesReport from "./AttendeesReport";
-import {
-  Collapse,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
-} from "reactstrap";
+import { Collapse } from "reactstrap";
 import _ from "lodash";
 import moment from "moment";
 import filters from "../filters/filters";
